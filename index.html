@@ -233,6 +233,10 @@
 
     <!-- ===================== SCREEN 2: AR tracking mode ===================== -->
     <div id="ar-screen">
+        <button class="btn-text" id="ar-back-btn"
+            style="position: fixed; top: calc(14px + env(safe-area-inset-top)); left: 14px; z-index: 27; background: rgba(0,0,0,0.55); border-radius: 999px; padding: 8px 16px;">
+            &larr; Back
+        </button>
         <div id="ar-status-banner">Looking for the dish photo…</div>
 
         <div id="ar-fallback-link">
@@ -262,7 +266,7 @@
     <!-- ===================== SCREEN 3: simple video fallback ===================== -->
     <div id="video-screen">
         <button class="btn-text back-link" id="video-back-btn">&larr; Back</button>
-        <video id="fallback-video" src="./dish.mp4"  loop playsinline webkit-playsinline controls></video>
+        <video id="fallback-video" src="./dish.mp4" loop playsinline webkit-playsinline controls></video>
 
         <div class="ingredient-card visible" id="video-ingredient-card">
             <h2 id="video-dish-name">Dish name</h2>
@@ -294,6 +298,7 @@
         const videoBackBtn = document.getElementById('video-back-btn');
         const arGiveUpBtn = document.getElementById('ar-give-up-btn');
         const arFallbackLink = document.getElementById('ar-fallback-link');
+        const arBackBtn = document.getElementById('ar-back-btn');
 
         const arStatusBanner = document.getElementById('ar-status-banner');
         const arIngredientCard = document.getElementById('ar-ingredient-card');
@@ -362,6 +367,18 @@
         arGiveUpBtn.addEventListener('click', () => {
             arScreen.style.display = 'none';
             videoScreen.style.display = 'block';
+            // Stop the camera stream so it's not still running in the background
+            const arSystem = arSceneEl.systems['mindar-image-system'];
+            if (arSystem && arSystem.stop) arSystem.stop();
+        });
+
+        arBackBtn.addEventListener('click', () => {
+            arScreen.style.display = 'none';
+            choiceScreen.style.display = 'flex';
+            clearTimeout(arGiveUpTimer);
+            arFallbackLink.classList.remove('visible');
+            arVideo.pause();
+
             // Stop the camera stream so it's not still running in the background
             const arSystem = arSceneEl.systems['mindar-image-system'];
             if (arSystem && arSystem.stop) arSystem.stop();
