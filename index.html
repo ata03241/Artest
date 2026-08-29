@@ -1,311 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>AR Menu — Demo</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>AR Menu — Demo</title>
 
 
-<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-<style>
-  :root {
-    --bg: #0c0b0a;
-    --card-bg: rgba(20, 18, 16, 0.9);
-    --text: #f5efe6;
-    --text-dim: #b9ada0;
-    --accent: #f0b866;
-    --accent-dark: #201a12;
-  }
+    <style>
+        :root {
+            --bg: #0c0b0a;
+            --card-bg: rgba(20, 18, 16, 0.9);
+            --text: #f5efe6;
+            --text-dim: #b9ada0;
+            --accent: #f0b866;
+            --accent-dark: #201a12;
+        }
 
-  * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
 
-  a-scene { width: 100%; height: 100%; }
+        a-scene {
+            width: 100%;
+            height: 100%;
+        }
 
-  /* ---------- Shared components ---------- */
+        /* ---------- Shared components ---------- */
 
-  .btn-primary {
-    padding: 14px 30px;
-    border-radius: 999px;
-    border: none;
-    background: var(--accent);
-    color: var(--accent-dark);
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-  }
+        .btn-primary {
+            padding: 14px 30px;
+            border-radius: 999px;
+            border: none;
+            background: var(--accent);
+            color: var(--accent-dark);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
-  .btn-text {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 14px;
-    text-decoration: underline;
-    cursor: pointer;
-    padding: 8px;
-  }
+        .btn-text {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 14px;
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 8px;
+        }
 
-  .ingredient-card {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    bottom: calc(16px + env(safe-area-inset-bottom));
-    z-index: 25;
-    background: var(--card-bg);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    border-radius: 18px;
-    padding: 16px 18px;
-    opacity: 0;
-    transform: translateY(12px);
-    transition: opacity 0.35s ease, transform 0.35s ease;
-    pointer-events: none;
-  }
-  .ingredient-card.visible { opacity: 1; transform: translateY(0); }
-  .ingredient-card h2 { margin: 0 0 6px; font-size: 17px; font-weight: 600; color: var(--accent); }
-  .ingredient-card p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--text); }
-  .ingredient-card .allergens { margin-top: 8px; font-size: 12px; color: #c9a37a; }
+        .ingredient-card {
+            position: fixed;
+            left: 12px;
+            right: 12px;
+            bottom: calc(16px + env(safe-area-inset-bottom));
+            z-index: 25;
+            background: var(--card-bg);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: 18px;
+            padding: 16px 18px;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+            pointer-events: none;
+        }
 
-  /* ---------- Screen 1: Choice screen ---------- */
+        .ingredient-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-  #choice-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 32px;
-    text-align: center;
-    gap: 14px;
-  }
-  #choice-screen h1 { font-size: 21px; margin: 0; }
-  #choice-screen p { font-size: 14px; line-height: 1.5; color: var(--text-dim); max-width: 320px; margin: 0 0 6px; }
-  #choice-screen .options { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; width: 100%; max-width: 280px; }
+        .ingredient-card h2 {
+            margin: 0 0 6px;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--accent);
+        }
 
-  /* ---------- Screen 2: AR tracking mode ---------- */
+        .ingredient-card p {
+            margin: 0;
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: var(--text);
+        }
 
-  #ar-screen { position: fixed; inset: 0; z-index: 10; display: none; }
+        .ingredient-card .allergens {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #c9a37a;
+        }
 
-  #ar-status-banner {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 20;
-    padding: 14px 16px calc(14px + env(safe-area-inset-top));
-    background: linear-gradient(180deg, rgba(0,0,0,0.75), rgba(0,0,0,0));
-    text-align: center;
-    font-size: 14px;
-    pointer-events: none;
-    transition: opacity 0.4s ease;
-  }
-  #ar-status-banner.hidden { opacity: 0; }
+        /* ---------- Screen 1: Choice screen ---------- */
 
-  #ar-fallback-link {
-    position: fixed;
-    bottom: 14px;
-    left: 0; right: 0;
-    z-index: 26;
-    text-align: center;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    pointer-events: none;
-  }
-  #ar-fallback-link.visible { opacity: 1; pointer-events: auto; }
-  #ar-fallback-link button { pointer-events: auto; }
+        #choice-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            text-align: center;
+            gap: 14px;
+        }
 
-  /* ---------- Screen 3: Simple fullscreen video fallback ---------- */
+        #choice-screen h1 {
+            font-size: 21px;
+            margin: 0;
+        }
 
-  #video-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 15;
-    display: none;
-    background: #000;
-  }
-  #fallback-video { width: 100%; height: 100%; object-fit: contain; }
-  #video-screen .back-link {
-    position: fixed;
-    top: calc(14px + env(safe-area-inset-top));
-    left: 14px;
-    z-index: 27;
-  }
-</style>
+        #choice-screen p {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-dim);
+            max-width: 320px;
+            margin: 0 0 6px;
+        }
+
+        #choice-screen .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 280px;
+        }
+
+        /* ---------- Screen 2: AR tracking mode ---------- */
+
+        #ar-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: none;
+        }
+
+        #ar-status-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            padding: 14px 16px calc(14px + env(safe-area-inset-top));
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+            text-align: center;
+            font-size: 14px;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        #ar-status-banner.hidden {
+            opacity: 0;
+        }
+
+        #ar-fallback-link {
+            position: fixed;
+            bottom: 14px;
+            left: 0;
+            right: 0;
+            z-index: 26;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        #ar-fallback-link.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #ar-fallback-link button {
+            pointer-events: auto;
+        }
+
+        /* ---------- Screen 3: Simple fullscreen video fallback ---------- */
+
+        #video-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 15;
+            display: none;
+            background: #000;
+        }
+
+        #fallback-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        #video-screen .back-link {
+            position: fixed;
+            top: calc(14px + env(safe-area-inset-top));
+            left: 14px;
+            z-index: 27;
+        }
+    </style>
 </head>
 
 <body>
 
-  <!-- ===================== SCREEN 1: choice ===================== -->
-  <div id="choice-screen">
-    <h1 id="dish-title">Grillad lax med citron</h1>
-    <p>Point your camera at the dish photo on the menu to see it come alive — or just watch the video directly.</p>
-    <div class="options">
-      <button class="btn-primary" id="start-ar-btn">Point camera at the photo</button>
-      <button class="btn-text" id="start-video-btn">Just play the video instead</button>
-    </div>
-  </div>
-
-  <video
-    id="ar-video"
-    src="./dish.mp4"
-    preload="auto"
-    loop
-    muted
-    playsinline
-    webkit-playsinline
-    crossorigin="anonymous"
-    style="position: fixed; width: 2px; height: 2px; opacity: 0; pointer-events: none;"
-  ></video>
-
-  <!-- ===================== SCREEN 2: AR tracking mode ===================== -->
-  <div id="ar-screen">
-    <div id="ar-status-banner">Looking for the dish photo…</div>
-
-    <div id="ar-fallback-link">
-      <button class="btn-text" id="ar-give-up-btn" style="background: rgba(0,0,0,0.55); border-radius: 999px;">
-        Not working? Just play the video
-      </button>
+    <!-- ===================== SCREEN 1: choice ===================== -->
+    <div id="choice-screen">
+        <h1 id="dish-title">Grillad lax med citron</h1>
+        <p>Point your camera at the dish photo on the menu to see it come alive — or just watch the video directly.</p>
+        <div class="options">
+            <button class="btn-primary" id="start-ar-btn">Point camera at the photo</button>
+            <button class="btn-text" id="start-video-btn">Just play the video instead</button>
+        </div>
     </div>
 
-    <div class="ingredient-card" id="ar-ingredient-card">
-      <h2 id="ar-dish-name">Dish name</h2>
-      <p id="ar-dish-ingredients">Ingredients</p>
-      <div class="allergens" id="ar-dish-allergens"></div>
+    <video id="ar-video" src="./dish.mp4" preload="auto" loop muted playsinline webkit-playsinline
+        crossorigin="anonymous"
+        style="position: fixed; width: 2px; height: 2px; opacity: 0; pointer-events: none;"></video>
+
+    <!-- ===================== SCREEN 2: AR tracking mode ===================== -->
+    <div id="ar-screen">
+        <div id="ar-status-banner">Looking for the dish photo…</div>
+
+        <div id="ar-fallback-link">
+            <button class="btn-text" id="ar-give-up-btn" style="background: rgba(0,0,0,0.55); border-radius: 999px;">
+                Not working? Just play the video
+            </button>
+        </div>
+
+        <div class="ingredient-card" id="ar-ingredient-card">
+            <h2 id="ar-dish-name">Dish name</h2>
+            <p id="ar-dish-ingredients">Ingredients</p>
+            <div class="allergens" id="ar-dish-allergens"></div>
+        </div>
+
+        <a-scene id="ar-scene"
+            mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiScanning: no; uiLoading: no;"
+            color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
+            device-orientation-permission-ui="enabled: false" embedded>
+            <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false;"></a-camera>
+
+            <a-entity id="target-0" mindar-image-target="targetIndex: 0">
+                <a-video src="#ar-video" width="1" height="0.75" position="0 0 0" rotation="0 0 0"></a-video>
+            </a-entity>
+        </a-scene>
     </div>
 
-    <a-scene
-      id="ar-scene"
-      mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiScanning: no; uiLoading: no;"
-      color-space="sRGB"
-      renderer="colorManagement: true, physicallyCorrectLights"
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
-      embedded
-    >
-      <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false;"></a-camera>
+    <!-- ===================== SCREEN 3: simple video fallback ===================== -->
+    <div id="video-screen">
+        <button class="btn-text back-link" id="video-back-btn">&larr; Back</button>
+        <video id="fallback-video" src="./dish.mp4" autoplay loop playsinline webkit-playsinline controls></video>
 
-      <a-entity id="target-0" mindar-image-target="targetIndex: 0">
-        <a-video src="#ar-video" width="1" height="0.75" position="0 0 0" rotation="0 0 0"></a-video>
-      </a-entity>
-    </a-scene>
-  </div>
-
-  <!-- ===================== SCREEN 3: simple video fallback ===================== -->
-  <div id="video-screen">
-    <button class="btn-text back-link" id="video-back-btn">&larr; Back</button>
-    <video id="fallback-video" src="./dish.mp4" autoplay loop playsinline webkit-playsinline controls></video>
-
-    <div class="ingredient-card visible" id="video-ingredient-card">
-      <h2 id="video-dish-name">Dish name</h2>
-      <p id="video-dish-ingredients">Ingredients</p>
-      <div class="allergens" id="video-dish-allergens"></div>
+        <div class="ingredient-card visible" id="video-ingredient-card">
+            <h2 id="video-dish-name">Dish name</h2>
+            <p id="video-dish-ingredients">Ingredients</p>
+            <div class="allergens" id="video-dish-allergens"></div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    // ---- Example dish data. In the real product this comes from the API. ----
-    const DISH = {
-      name: 'Grillad lax med citron',
-      ingredients: 'Norsk lax, citron, dill, smör, färskpotatis, rostad sparris.',
-      allergens: 'Innehåller: fisk. Kan innehålla spår av mjölk.'
-    };
+    <script>
+        // ---- Example dish data. In the real product this comes from the API. ----
+        const DISH = {
+            name: 'Grillad lax med citron',
+            ingredients: 'Norsk lax, citron, dill, smör, färskpotatis, rostad sparris.',
+            allergens: 'Innehåller: fisk. Kan innehålla spår av mjölk.'
+        };
 
-    ['ar', 'video'].forEach(prefix => {
-      document.getElementById(`${prefix}-dish-name`).textContent = DISH.name;
-      document.getElementById(`${prefix}-dish-ingredients`).textContent = DISH.ingredients;
-      document.getElementById(`${prefix}-dish-allergens`).textContent = DISH.allergens;
-    });
+        ['ar', 'video'].forEach(prefix => {
+            document.getElementById(`${prefix}-dish-name`).textContent = DISH.name;
+            document.getElementById(`${prefix}-dish-ingredients`).textContent = DISH.ingredients;
+            document.getElementById(`${prefix}-dish-allergens`).textContent = DISH.allergens;
+        });
 
-    const choiceScreen = document.getElementById('choice-screen');
-    const arScreen = document.getElementById('ar-screen');
-    const videoScreen = document.getElementById('video-screen');
+        const choiceScreen = document.getElementById('choice-screen');
+        const arScreen = document.getElementById('ar-screen');
+        const videoScreen = document.getElementById('video-screen');
 
-    const startArBtn = document.getElementById('start-ar-btn');
-    const startVideoBtn = document.getElementById('start-video-btn');
-    const videoBackBtn = document.getElementById('video-back-btn');
-    const arGiveUpBtn = document.getElementById('ar-give-up-btn');
-    const arFallbackLink = document.getElementById('ar-fallback-link');
+        const startArBtn = document.getElementById('start-ar-btn');
+        const startVideoBtn = document.getElementById('start-video-btn');
+        const videoBackBtn = document.getElementById('video-back-btn');
+        const arGiveUpBtn = document.getElementById('ar-give-up-btn');
+        const arFallbackLink = document.getElementById('ar-fallback-link');
 
-    const arStatusBanner = document.getElementById('ar-status-banner');
-    const arIngredientCard = document.getElementById('ar-ingredient-card');
-    const arVideo = document.getElementById('ar-video');
-    const arSceneEl = document.getElementById('ar-scene');
-    const arTargetEntity = document.getElementById('target-0');
+        const arStatusBanner = document.getElementById('ar-status-banner');
+        const arIngredientCard = document.getElementById('ar-ingredient-card');
+        const arVideo = document.getElementById('ar-video');
+        const arSceneEl = document.getElementById('ar-scene');
+        const arTargetEntity = document.getElementById('target-0');
 
-    const fallbackVideo = document.getElementById('fallback-video');
+        const fallbackVideo = document.getElementById('fallback-video');
 
-    let arGiveUpTimer = null;
+        let arGiveUpTimer = null;
 
-    // ---------- Flow: choice screen ----------
-    startArBtn.addEventListener('click', () => {
-      choiceScreen.style.display = 'none';
-      arScreen.style.display = 'block';
+        // ---------- Flow: choice screen ----------
+        startArBtn.addEventListener('click', () => {
+            choiceScreen.style.display = 'none';
+            arScreen.style.display = 'block';
 
-      const startArSystem = () => {
-        const arSystem = arSceneEl.systems['mindar-image-system'];
-        arSystem.start();
-      };
-      if (arSceneEl.hasLoaded) {
-        startArSystem();
-      } else {
-        arSceneEl.addEventListener('renderstart', startArSystem, { once: true });
-      }
+            const startArSystem = () => {
+                const arSystem = arSceneEl.systems['mindar-image-system'];
+                arSystem.start();
+            };
+            if (arSceneEl.hasLoaded) {
+                startArSystem();
+            } else {
+                arSceneEl.addEventListener('renderstart', startArSystem, { once: true });
+            }
 
-      // Surface the "just play the video" escape hatch after 6s of no lock,
-      // so nobody gets stuck fighting bad lighting or a glare-y menu print.
-      arGiveUpTimer = setTimeout(() => {
-        arFallbackLink.classList.add('visible');
-      }, 6000);
-    });
+            // Surface the "just play the video" escape hatch after 6s of no lock,
+            // so nobody gets stuck fighting bad lighting or a glare-y menu print.
+            arGiveUpTimer = setTimeout(() => {
+                arFallbackLink.classList.add('visible');
+            }, 6000);
+        });
 
-    startVideoBtn.addEventListener('click', () => {
-      choiceScreen.style.display = 'none';
-      videoScreen.style.display = 'block';
-    });
+        startVideoBtn.addEventListener('click', () => {
 
-    // ---------- Flow: AR screen events ----------
-    arTargetEntity.addEventListener('targetFound', () => {
-      arStatusBanner.classList.add('hidden');
-      arIngredientCard.classList.add('visible');
-      clearTimeout(arGiveUpTimer);
-      arFallbackLink.classList.remove('visible');
-      arVideo.currentTime = 0;
-      arVideo.play()
-        .then(() => console.log('AR video playing OK, readyState:', arVideo.readyState))
-        .catch(err => console.error('AR video play() failed:', err));
-    });
+            arVideo.play().then(() => arVideo.pause()); // Preload the AR video so it starts instantly if the user switches to AR mode later
 
-    arTargetEntity.addEventListener('targetLost', () => {
-      arStatusBanner.classList.remove('hidden');
-      arIngredientCard.classList.remove('visible');
-      arVideo.pause();
-    });
+            choiceScreen.style.display = 'none';
+            videoScreen.style.display = 'block';
+        });
 
-    arGiveUpBtn.addEventListener('click', () => {
-      arScreen.style.display = 'none';
-      videoScreen.style.display = 'block';
-      // Stop the camera stream so it's not still running in the background
-      const arSystem = arSceneEl.systems['mindar-image-system'];
-      if (arSystem && arSystem.stop) arSystem.stop();
-    });
+        // ---------- Flow: AR screen events ----------
+        arTargetEntity.addEventListener('targetFound', () => {
+            arStatusBanner.classList.add('hidden');
+            arIngredientCard.classList.add('visible');
+            clearTimeout(arGiveUpTimer);
+            arFallbackLink.classList.remove('visible');
+            arVideo.currentTime = 0;
+            arVideo.play()
+                .then(() => console.log('AR video playing OK, readyState:', arVideo.readyState))
+                .catch(err => {
+                    console.error('AR video play() failed:', err);
+                    arStatusBanner.textContent = 'Video error: ' + err.message;
+                    arStatusBanner.classList.remove('hidden');
+                });
+        });
 
-    // ---------- Flow: video screen back button ----------
-    videoBackBtn.addEventListener('click', () => {
-      videoScreen.style.display = 'none';
-      fallbackVideo.pause();
-      choiceScreen.style.display = 'flex';
-    });
-  </script>
+        arTargetEntity.addEventListener('targetLost', () => {
+            arStatusBanner.classList.remove('hidden');
+            arIngredientCard.classList.remove('visible');
+            arVideo.pause();
+        });
+
+        arGiveUpBtn.addEventListener('click', () => {
+            arScreen.style.display = 'none';
+            videoScreen.style.display = 'block';
+            // Stop the camera stream so it's not still running in the background
+            const arSystem = arSceneEl.systems['mindar-image-system'];
+            if (arSystem && arSystem.stop) arSystem.stop();
+        });
+
+        // ---------- Flow: video screen back button ----------
+        videoBackBtn.addEventListener('click', () => {
+            videoScreen.style.display = 'none';
+            fallbackVideo.pause();
+            choiceScreen.style.display = 'flex';
+        });
+    </script>
 </body>
+
 </html>
