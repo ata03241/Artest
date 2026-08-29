@@ -262,7 +262,7 @@
     <!-- ===================== SCREEN 3: simple video fallback ===================== -->
     <div id="video-screen">
         <button class="btn-text back-link" id="video-back-btn">&larr; Back</button>
-        <video id="fallback-video" src="./dish.mp4" autoplay loop playsinline webkit-playsinline controls></video>
+        <video id="fallback-video" src="./dish.mp4"  loop playsinline webkit-playsinline controls></video>
 
         <div class="ingredient-card visible" id="video-ingredient-card">
             <h2 id="video-dish-name">Dish name</h2>
@@ -333,6 +333,8 @@
 
             choiceScreen.style.display = 'none';
             videoScreen.style.display = 'block';
+            fallbackVideo.currentTime = 0;
+            fallbackVideo.play().catch(err => console.error('Fallback video play failed:', err));
         });
 
         // ---------- Flow: AR screen events ----------
