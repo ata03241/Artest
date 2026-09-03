@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>AR Menu — Demo</title>
 
-
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
@@ -39,8 +38,6 @@
             width: 100%;
             height: 100%;
         }
-
-        /* ---------- Shared components ---------- */
 
         .btn-primary {
             padding: 14px 30px;
@@ -105,8 +102,6 @@
             color: #c9a37a;
         }
 
-        /* ---------- Screen 1: Choice screen ---------- */
-
         #choice-screen {
             position: fixed;
             inset: 0;
@@ -141,8 +136,6 @@
             width: 100%;
             max-width: 280px;
         }
-
-        /* ---------- Screen 2: AR tracking mode ---------- */
 
         #ar-screen {
             position: fixed;
@@ -190,8 +183,6 @@
             pointer-events: auto;
         }
 
-        /* ---------- Screen 3: Simple fullscreen video fallback ---------- */
-
         #video-screen {
             position: fixed;
             inset: 0;
@@ -217,7 +208,7 @@
 
 <body>
 
-    <!-- ===================== SCREEN 1: choice ===================== -->
+    <!-- ===================== SCREEN 1: choice (this is "home") ===================== -->
     <div id="choice-screen">
         <h1 id="dish-title">Grillad lax med citron</h1>
         <p>Point your camera at the dish photo on the menu to see it come alive — or just watch the video directly.</p>
@@ -227,9 +218,13 @@
         </div>
     </div>
 
+    <!-- Kept OUTSIDE a-assets and NOT shrunk to near-zero size: a-assets
+         hides children with display:none, and even a 2px/opacity:0 element
+         can still get throttled by iOS Safari's video decode power-saving.
+         Positioning a normal-sized element off-screen is more reliable. -->
     <video id="ar-video" src="./dish.mp4" preload="auto" loop muted playsinline webkit-playsinline
         crossorigin="anonymous"
-        style="position: fixed; width: 2px; height: 2px; opacity: 0; pointer-events: none;"></video>
+        style="position: fixed; top: 0; left: -9999px; width: 100px; height: 100px; pointer-events: none;"></video>
 
     <!-- ===================== SCREEN 2: AR tracking mode ===================== -->
     <div id="ar-screen">
@@ -276,7 +271,6 @@
     </div>
 
     <script>
-        // ---- Example dish data. In the real product this comes from the API. ----
         const DISH = {
             name: 'Grillad lax med citron',
             ingredients: 'Norsk lax, citron, dill, smör, färskpotatis, rostad sparris.',
@@ -310,14 +304,17 @@
 
         let arGiveUpTimer = null;
 
-        // ---------- Flow: choice screen ----------
+        // ---------- Flow: choice screen (home) ----------
         startArBtn.addEventListener('click', () => {
+            arVideo.play().then(() => arVideo.pause()).catch(() => {});
+
             choiceScreen.style.display = 'none';
             arScreen.style.display = 'block';
 
             const startArSystem = () => {
                 const arSystem = arSceneEl.systems['mindar-image-system'];
                 arSystem.start();
+                setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
             };
             if (arSceneEl.hasLoaded) {
                 startArSystem();
@@ -325,16 +322,13 @@
                 arSceneEl.addEventListener('renderstart', startArSystem, { once: true });
             }
 
-            // Surface the "just play the video" escape hatch after 6s of no lock,
-            // so nobody gets stuck fighting bad lighting or a glare-y menu print.
             arGiveUpTimer = setTimeout(() => {
                 arFallbackLink.classList.add('visible');
             }, 6000);
         });
 
         startVideoBtn.addEventListener('click', () => {
-
-            arVideo.play().then(() => arVideo.pause()); // Preload the AR video so it starts instantly if the user switches to AR mode later
+            arVideo.play().then(() => arVideo.pause()).catch(() => {});
 
             choiceScreen.style.display = 'none';
             videoScreen.style.display = 'block';
@@ -367,11 +361,14 @@
         arGiveUpBtn.addEventListener('click', () => {
             arScreen.style.display = 'none';
             videoScreen.style.display = 'block';
-            // Stop the camera stream so it's not still running in the background
+            fallbackVideo.currentTime = 0;
+            fallbackVideo.play().catch(err => console.error('Fallback video play failed:', err));
+
             const arSystem = arSceneEl.systems['mindar-image-system'];
             if (arSystem && arSystem.stop) arSystem.stop();
         });
 
+        // ---------- Back to home ----------
         arBackBtn.addEventListener('click', () => {
             arScreen.style.display = 'none';
             choiceScreen.style.display = 'flex';
@@ -379,12 +376,10 @@
             arFallbackLink.classList.remove('visible');
             arVideo.pause();
 
-            // Stop the camera stream so it's not still running in the background
             const arSystem = arSceneEl.systems['mindar-image-system'];
             if (arSystem && arSystem.stop) arSystem.stop();
         });
 
-        // ---------- Flow: video screen back button ----------
         videoBackBtn.addEventListener('click', () => {
             videoScreen.style.display = 'none';
             fallbackVideo.pause();
